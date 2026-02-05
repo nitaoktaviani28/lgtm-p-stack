@@ -225,8 +225,8 @@ mimir:
       storage:
         backend: s3
         s3:
-          access_key_id: tMjCOFIhWpnfusYT0Jus
-          secret_access_key: DNOc4GCfYzaiYUAh16y2iZ4xHRIle6Uq6XXhJHcp
+          access_key_id: [ROOT USER]
+          secret_access_key: [ROOT PASSWORD]
           endpoint: minio.monitoring.svc.cluster.local:9000
           insecure: true
           bucket_name: mimir-ruler
