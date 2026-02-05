@@ -1,0 +1,144 @@
+######################################
+# GLOBAL SETTING (JANGAN PAKAI)
+# nodeSelector kita set PER KOMPONEN
+######################################
+
+
+######################################
+# STORAGE (MINIO / S3)
+######################################
+storage:
+  trace:
+    backend: s3
+    s3:
+      endpoint: minio.monitoring.svc.cluster.local:9000
+      bucket: tempo-traces
+      access_key: fHmWLDaPABxfZNcNbuzs
+      secret_key: L8ZAn09ltAQxcPeHUYN7PVtbeQvIo0irKXs2Gt9j
+      insecure: true
+
+
+######################################
+# OTLP RECEIVERS
+######################################
+traces:
+  otlp:
+    grpc:
+      enabled: true
+    http:
+      enabled: true
+
+
+######################################
+# DISTRIBUTOR
+######################################
+distributor:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# INGESTER
+######################################
+ingester:
+  replicas: 3
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool
+  persistence:
+    enabled: false   # 🔥 DEMO MODE: hindari disk attach limit
+  resources:
+    requests:
+      cpu: 75m
+      memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+
+
+######################################
+# QUERY FRONTEND
+######################################
+queryFrontend:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# QUERIER
+######################################
+querier:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# COMPACTOR
+######################################
+compactor:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool
+  persistence:
+    enabled: false   # DEMO MODE
+  resources:
+    requests:
+      cpu: 75m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# METRICS GENERATOR
+######################################
+metricsGenerator:
+  enabled: true
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# MEMCACHED (CACHE)
+######################################
+memcached:
+  enabled: true
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 150m
+      memory: 256Mi

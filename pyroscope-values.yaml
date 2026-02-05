@@ -1,0 +1,176 @@
+# Menggunakan mode microservices
+# Cocok untuk environment terdistribusi
+deploymentMode: microservices
+
+# Semua komponen Pyroscope dijalankan
+# pada node pool tertentu
+global:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool
+
+# PYROSCOPE CORE CONFIG
+pyroscope:
+  extraArgs:
+    # Sharding ring dengan replication factor 1 (lab)
+    store-gateway.sharding-ring.replication-factor: "1"
+
+  structuredConfig:
+    # Multitenancy dimatikan (single tenant)
+    multitenancy_enabled: false
+
+    # STORAGE (MINIO / S3)
+    storage:
+      backend: s3
+      s3:
+        endpoint: minio.monitoring.svc.cluster.local:9000
+        bucket_name: pyroscope-data
+        region: us-east-1
+        access_key_id: [ROOT USER]
+        secret_access_key: [ROOT PASSWORD]
+        insecure: true
+        force_path_style: true
+
+# PYROSCOPE COMPONENTS
+  components:
+  
+    # DISTRIBUTOR
+    distributor:
+      kind: Deployment
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+    # INGESTER
+    ingester:
+      kind: StatefulSet
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      terminationGracePeriodSeconds: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 300m
+          memory: 512Mi
+
+    # QUERIER
+    querier:
+      kind: Deployment
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+    # QUERY FRONTEND
+    query-frontend:
+      kind: Deployment
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+    # QUERY SCHEDULER
+    query-scheduler:
+      kind: Deployment
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      resources:
+        requests:
+          cpu: 30m
+          memory: 64Mi
+        limits:
+          cpu: 150m
+          memory: 128Mi
+          
+    # COMPACTOR
+    compactor:
+      kind: StatefulSet
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      terminationGracePeriodSeconds: 600
+      persistence:
+        enabled: false   # LAB MODE
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 300m
+          memory: 512Mi
+
+    # STORE GATEWAY
+    store-gateway:
+      kind: StatefulSet
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      persistence:
+        enabled: false   # LAB MODE
+      readinessProbe:
+        initialDelaySeconds: 30
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+    # TENANT SETTINGS
+    tenant-settings:
+      kind: Deployment
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+    # AD-HOC PROFILES
+    ad-hoc-profiles:
+      kind: Deployment
+      replicaCount: 1
+      nodeSelector:
+        kubernetes.azure.com/agentpool: lgtmpool
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+# Alloy dimatikan, akan diinstall terpisah
+alloy:
+  enabled: false
+
+# MinIO internal dimatikan
+minio:
+  enabled: false

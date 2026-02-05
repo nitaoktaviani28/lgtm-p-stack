@@ -1,0 +1,139 @@
+######################################
+# Scheduling (Azure node pool)
+######################################
+nodeSelector:
+  kubernetes.azure.com/agentpool: lgtm1
+
+######################################
+# Grafana Configuration
+######################################
+grafana.ini:
+  auth:
+    disable_login_form: true
+
+  auth.anonymous:
+    enabled: true
+    org_role: Admin
+
+  auth.basic:
+    enabled: false
+
+  users:
+    allow_sign_up: false
+
+
+######################################
+# Service (Expose Grafana)
+######################################
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 3000
+
+
+######################################
+# Persistence (PVC)
+######################################
+persistence:
+  enabled: true
+  type: pvc
+  storageClassName: managed-csi
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+
+
+######################################
+# Datasources (Provisioned)
+######################################
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+
+      # =========================
+      # LOKI (Logs)
+      # =========================
+      - name: Loki
+        uid: loki
+        type: loki
+        access: proxy
+        url: http://loki-gateway.monitoring.svc.cluster.local
+        editable: true
+        isDefault: false
+
+
+      # =========================
+      # MIMIR - Pods tenant
+      # =========================
+      - name: Mimir-Pods-Tenant
+        uid: mimir-pods
+        type: prometheus
+        access: proxy
+        orgId: 1
+        url: http://mimir-gateway.monitoring.svc.cluster.local/prometheus
+        editable: true
+        jsonData:
+          httpHeaderName1: "X-Scope-OrgID"
+          alertmanagerUid: "alertmanager"
+        secureJsonData:
+          httpHeaderValue1: "pods"
+
+
+      # =========================
+      # MIMIR - Nodes tenant (DEFAULT)
+      # =========================
+      - name: Mimir-Nodes-Tenant
+        uid: mimir-nodes
+        type: prometheus
+        access: proxy
+        orgId: 1
+        url: http://mimir-gateway.monitoring.svc.cluster.local/prometheus
+        isDefault: true
+        editable: true
+        jsonData:
+          httpHeaderName1: "X-Scope-OrgID"
+          alertmanagerUid: "alertmanager"
+        secureJsonData:
+          httpHeaderValue1: "nodes"
+
+
+      # =========================
+      # TEMPO (Traces)
+      # =========================
+      - name: Tempo
+        uid: tempo
+        type: tempo
+        access: proxy
+        orgId: 1
+        url: http://tempo-query-frontend.monitoring.svc.cluster.local:3200
+        editable: true
+        jsonData:
+          httpMethod: GET
+
+          # Trace → Log (Tempo → Loki)
+          tracesToLogsV2:
+            datasourceUid: loki
+            spanStartTimeShift: "-2m"
+            spanEndTimeShift: "2m"
+            filterByTraceID: true
+            filterBySpanID: true
+
+          # Service graph (Tempo → Mimir metrics)
+          serviceMap:
+            datasourceUid: mimir-nodes
+
+          # Node graph
+          nodeGraph:
+            enabled: true
+      
+      # =========================
+      # PYROSCOPE (Profiling)
+      # =========================
+      - name: Pyroscope
+        uid: pyroscope
+        type: grafana-pyroscope-datasource
+        access: proxy
+        orgId: 1
+        url: http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
+        editable: true

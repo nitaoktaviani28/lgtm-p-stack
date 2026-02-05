@@ -1,0 +1,62 @@
+alloy:
+  configMap:
+    create: false
+    name: alloy-config
+    key: config.alloy
+
+  clustering:
+    enabled: false
+
+  mounts:
+    varlog: true
+
+  extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+
+  securityContext:
+    privileged: true
+    runAsUser: 0
+    runAsGroup: 0
+
+  containerSecurityContext:
+    capabilities:
+      add:
+        - SYS_ADMIN
+        - SYS_PTRACE
+        - SYS_RESOURCE
+
+controller:
+  type: daemonset
+
+  hostPID: true
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.azure.com/agentpool
+                operator: In
+                values:
+                  - app
+                  - lgtm1
+                  - lgtm2
+                  - app2
+
+  extraVolumeMounts:
+    - name: sys-kernel
+      mountPath: /sys/kernel
+      readOnly: true
+
+  extraVolumes:
+    - name: sys-kernel
+      hostPath:
+        path: /sys/kernel
+        type: Directory

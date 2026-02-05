@@ -1,0 +1,39 @@
+# Menentukan node pool AKS tempat MinIO dijalankan
+# Disarankan menggunakan node pool khusus observability
+nodeSelector:
+  kubernetes.azure.com/agentpool: lgtmpool
+
+# Mode standalone digunakan untuk lab / testing
+# Untuk production: gunakan mode distributed dengan beberapa replica
+mode: standalone
+
+# Jumlah replica, harus 1 jika mode standalone
+replicas: 1
+
+# Persistence WAJIB agar data observability tidak hilang saat pod restart
+# Storage akan menggunakan Azure Managed Disk (via StorageClass AKS)
+persistence:
+  enabled: true
+  size: 10Gi
+
+# Resource minimum untuk MinIO di environment lab
+# Production biasanya membutuhkan memory dan disk throughput lebih besar
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 300m
+    memory: 512Mi
+
+# Service untuk MinIO S3 API
+# Digunakan oleh Loki, Mimir, Tempo, dan Pyroscope
+service:
+  type: LoadBalancer
+  port: 9000
+
+# Service untuk MinIO Web Console
+# Digunakan untuk monitoring dan manajemen bucket
+consoleService:
+  type: LoadBalancer
+  port: 9001

@@ -1,0 +1,245 @@
+######################################
+# DISTRIBUTOR
+######################################
+distributor:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  resources:
+    requests:
+      cpu: 75m
+      memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+
+
+######################################
+# GATEWAY
+######################################
+gateway:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  resources:
+    requests:
+      cpu: 75m
+      memory: 128Mi
+    limits:
+      cpu: 128m
+      memory: 250Mi
+
+
+######################################
+# QUERY FRONTEND
+######################################
+query_frontend:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  resources:
+    requests:
+      cpu: 75m
+      memory: 252Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+
+
+######################################
+# QUERY SCHEDULER
+######################################
+query_scheduler:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  resources:
+    requests:
+      cpu: 75m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# QUERIER
+######################################
+querier:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  resources:
+    requests:
+      cpu: 75m
+      memory: 312Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+
+
+######################################
+# INGESTER
+######################################
+ingester:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  zoneAwareReplication:
+    enabled: false
+  persistentVolume:
+    enabled: false #untuk demo dimatikan, untuk prod wajib nyala
+  resources:
+    requests:
+      cpu: 100m
+      memory: 315Mi
+    limits:
+      cpu: 185m
+      memory: 512Mi
+
+
+######################################
+# STORE GATEWAY
+######################################
+store_gateway:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  zoneAwareReplication:
+    enabled: false
+  persistentVolume:
+    enabled: true
+    storageClass: managed-csi
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 75m
+      memory: 285Mi
+    limits:
+      cpu: 128m
+      memory: 428Mi
+
+
+######################################
+# COMPACTOR
+######################################
+compactor:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  persistentVolume:
+    enabled: true
+    storageClass: managed-csi
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 75m
+      memory: 284Mi
+    limits:
+      cpu: 128m
+      memory: 368Mi
+
+
+######################################
+# ALERTMANAGER
+######################################
+alertmanager:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  fallbackConfig: |
+    route:
+      receiver: 'default'
+    receivers:
+      - name: 'default'
+  persistentVolume:
+    enabled: true
+    storageClass: managed-csi
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 75m
+      memory: 156Mi
+    limits:
+      cpu: 128m
+      memory: 212Mi
+
+
+######################################
+# RULER
+######################################
+ruler:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  resources:
+    requests:
+      cpu: 75m
+      memory: 156Mi
+    limits:
+      cpu: 128m
+      memory: 212Mi
+
+
+######################################
+# OVERRIDES EXPORTER
+######################################
+overrides_exporter:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 156Mi
+
+
+######################################
+# KAFKA (INTERNAL)
+######################################
+kafka:
+  enabled: true
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+
+
+######################################
+# ROLLOUT OPERATOR
+######################################
+rollout_operator:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtm1
+
+
+######################################
+# MINIO
+######################################
+minio:
+  enabled: false
+
+
+######################################
+# STORAGE CONFIG (UNCHANGED)
+######################################
+mimir:
+  structuredConfig:
+    common:
+      storage:
+        backend: s3
+        s3:
+          access_key_id: tMjCOFIhWpnfusYT0Jus
+          secret_access_key: DNOc4GCfYzaiYUAh16y2iZ4xHRIle6Uq6XXhJHcp
+          endpoint: minio.monitoring.svc.cluster.local:9000
+          insecure: true
+          bucket_name: mimir-ruler
+
+    blocks_storage:
+      s3:
+        bucket_name: mimir-tsdb
+
+    alertmanager_storage:
+      s3:
+        bucket_name: mimir-ruler
+
+    ruler_storage:
+      s3:
+        bucket_name: mimir-ruler
+

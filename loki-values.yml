@@ -1,0 +1,179 @@
+######################################
+# DISABLE TEST POD
+######################################
+test:
+  enabled: false
+
+
+######################################
+# DISABLE SELF MONITORING
+######################################
+monitoring:
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+
+
+######################################
+# DISABLE CANARY
+######################################
+canary:
+  enabled: false #untk di demo dimatikan, di prod harus nyala
+
+######################################
+# LOKI READ (QUERY)
+######################################
+read:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 192Mi
+    limits:
+      cpu: 200m
+      memory: 384Mi
+
+
+######################################
+# LOKI WRITE (INGESTER)
+######################################
+write:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool2
+  persistence:
+    enabled: true
+    storageClass: managed-csi
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 384Mi
+    limits:
+      cpu: 400m
+      memory: 768Mi
+
+
+######################################
+# LOKI BACKEND
+######################################
+backend:
+  replicas: 1
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool2
+  persistence:
+    enabled: true
+    storageClass: managed-csi
+    size: 10Gi
+  extraVolumes:
+    - name: retention
+      emptyDir: {}
+  extraVolumeMounts:
+    - name: retention
+      mountPath: /data
+  resources:
+    requests:
+      cpu: 150m
+      memory: 384Mi
+    limits:
+      cpu: 400m
+      memory: 768Mi
+
+
+######################################
+# LOKI GATEWAY
+######################################
+gateway:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# CHUNKS CACHE (MEMCACHED)
+######################################
+chunksCache:
+  enabled: true
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# RESULTS CACHE (MEMCACHED)
+######################################
+resultsCache:
+  enabled: true
+  nodeSelector:
+    kubernetes.azure.com/agentpool: lgtmpool2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+
+######################################
+# LOKI CORE CONFIG
+######################################
+loki:
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+
+  limits_config:
+    retention_period: 25h
+    max_query_lookback: 25h
+
+
+######################################
+# STORAGE SCHEMA (TSDB + S3)
+######################################
+  schemaConfig:
+    configs:
+      - from: "2026-01-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+        chunks:
+          period: 24h
+
+
+######################################
+# OBJECT STORAGE (MINIO)
+######################################
+  storage:
+    type: s3
+    bucketNames:
+      chunks: loki-chunks
+      ruler: loki-ruler
+      admin: loki-admin
+
+    s3:
+      endpoint: minio.monitoring.svc.cluster.local:9000
+      region: us-east-1
+      accessKeyId: fHmWLDaPABxfZNcNbuzs
+      secretAccessKey: L8ZAn09ltAQxcPeHUYN7PVtbeQvIo0irKXs2Gt9j
+      s3ForcePathStyle: true
+      insecure: true
