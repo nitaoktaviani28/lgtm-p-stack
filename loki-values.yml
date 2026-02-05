@@ -173,7 +173,7 @@ loki:
     s3:
       endpoint: minio.monitoring.svc.cluster.local:9000
       region: us-east-1
-      accessKeyId: fHmWLDaPABxfZNcNbuzs
-      secretAccessKey: L8ZAn09ltAQxcPeHUYN7PVtbeQvIo0irKXs2Gt9j
+      accessKeyId: [ROOT USER]
+      secretAccessKey: [ROOT PASSWORD]
       s3ForcePathStyle: true
       insecure: true
