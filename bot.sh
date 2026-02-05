@@ -1,9 +1,9 @@
 # ================= CONFIG =================
-$BotToken = "8553804565:AAGEHLmQMhtihftgzuf600a0Ahw1dGy88vE"
+$BotToken = "TOKEN TELEGRAM"
 $Api = "https://api.telegram.org/bot$BotToken"
 
 # whitelist chat id (user / group)
-$AllowedChats = @(6130289640, 6258597540)
+$AllowedChats = @(CHAT ID, CHAT ID)
 
 $Offset = 0
 
